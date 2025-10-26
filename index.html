@@ -534,13 +534,26 @@
             if (now.getSeconds() === lastIndependenceDayUpdate) return;
             lastIndependenceDayUpdate = now.getSeconds();
 
-            let nextIndependenceDay = new Date(now.getFullYear(), 7, 15); // Month is 7 (August)
-            if (now > nextIndependenceDay) {
-                nextIndependenceDay.setFullYear(now.getFullYear() + 1);
+            // Target date is Dec 1, 2025, as requested.
+            const independenceDayDate = new Date("2025-12-01T00:00:00"); 
+
+            // Start date for the countdown is Oct 26, 2025.
+            const startDate = new Date("2025-10-26T00:00:00");
+
+            if (now < startDate) {
+                // If it's before the countdown period, show the total duration.
+                const totalDuration = independenceDayDate - startDate;
+                const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24));
+                independenceDayCountdownEl.textContent = `Countdown begins Oct 26 (${totalDays} days total)`;
+            } else if (now > independenceDayDate) {
+                // If the date has passed.
+                independenceDayCountdownEl.textContent = `Independence Day has passed!`;
+            } else {
+                // We are in the countdown period.
+                const remainingTime = independenceDayDate - now;
+                const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24)); // Use ceil to be inclusive
+                independenceDayCountdownEl.textContent = `${days} days until Independence Day`;
             }
-            const remainingTime = nextIndependenceDay - now;
-            const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24)); // Use ceil to be inclusive
-            independenceDayCountdownEl.textContent = `${days} days until Independence Day`;
         }
 
         /**
@@ -685,4 +698,3 @@
     </script>
 </body>
 </html>
-

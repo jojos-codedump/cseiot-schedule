@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Countdown</title>
+    <!-- We will use Tailwind CSS for rapid UI development -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Using the "Chakra Petch" font for a techy feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Define the neon green color palette */
+        :root {
+            --neon-green: #39ff14;
+            --dark-green: #004d00;
+            --bg-black: #050505;
+            --glow-color: rgba(57, 255, 20, 0.7);
+        }
+
+        body {
+            font-family: 'Chakra Petch', sans-serif;
+            background-color: var(--bg-black);
+            color: #e0e0e0;
+            /* Grid background effect */
+            background-image: linear-gradient(rgba(0, 255, 0, 0.07) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 0, 0.07) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow-x: hidden;
+            padding: 1rem;
+        }
+
+        /* Main container for the "glass" effect */
+        .glass-container {
+            background: rgba(10, 25, 10, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 20px 0 var(--glow-color);
+        }
+
+        /* Neon text and pulse animation */
+        .neon-text {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green),
+                         0 0 15px var(--neon-green),
+                         0 0 30px var(--glow-color);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                text-shadow: 0 0 5px var(--neon-green),
+                             0 0 15px var(--neon-green),
+                             0 0 30px var(--glow-color);
+            }
+            to {
+                text-shadow: 0 0 10px var(--neon-green),
+                             0 0 30px var(--glow-color),
+                             0 0 60px var(--glow-color);
+            }
+        }
+
+        /* Countdown number styling */
+        .countdown-number {
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 3px #fff, 0 0 10px var(--neon-green);
+            line-height: 1;
+        }
+
+        /* Test Tube Progress Bar */
+        .test-tube-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .test-tube {
+            width: 80px;
+            height: 300px;
+            border: 4px solid #aaa;
+            border-top: none;
+            border-radius: 0 0 40px 40px;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 15px var(--glow-color);
+            transition: all 0.3s ease;
+        }
+
+        .test-tube-fluid {
+            width: 100%;
+            height: 50%; /* This will be set by JS */
+            background: linear-gradient(180deg, var(--neon-green) 0%, #2bff00 100%);
+            border-radius: 0 0 36px 36px;
+            position: absolute;
+            bottom: 0;
+            transition: height 0.5s ease-out, box-shadow 0.3s ease, filter 0.3s ease;
+            box-shadow: 0 0 15px var(--glow-color),
+                        inset 0 0 10px rgba(255, 255, 255, 0.5);
+            filter: brightness(1);
+        }
+
+        /* Fluid surface */
+        .test-tube-fluid::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: #afffab;
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+
+        /* Animated bubbles */
+        .test-tube-fluid::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            bottom: 10px;
+            left: 30%;
+            animation: bubble-rise 3s infinite ease-in;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            opacity: 0;
+        }
+
+        /* Cursor interaction */
+        .test-tube-container:hover .test-tube {
+            transform: scale(1.05);
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5), 0 0 30px var(--glow-color);
+        }
+        
+        .test-tube-container:hover .test-tube-fluid {
+            filter: brightness(1.2);
+            animation: slosh 0.5s alternate infinite ease-in-out;
+        }
+        
+        .test-tube-container:hover .test-tube-fluid::after {
+            animation-duration: 1.5s; /* Bubbles rise faster on hover */
+        }
+
+        @keyframes slosh {
+            from { transform: skewX(-3deg) translateX(2px); }
+            to { transform: skewX(3deg) translateX(-2px); }
+        }
+
+        @keyframes bubble-rise {
+            0% {
+                bottom: 10px;
+                opacity: 0;
+                transform: translateX(0);
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                bottom: 100%;
+                opacity: 0;
+                transform: translateX(calc(10px * (0.5 - var(--rand))));
+            }
+        }
+        
+        /* Custom scrollbar for techy look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--dark-green);
+            border-radius: 4px;
+            border: 1px solid var(--neon-green);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-green);
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        /* These media queries will override Tailwind classes on small screens */
+        @media (max-width: 640px) {
+            body {
+                padding: 0.5rem; /* Tighter padding for mobile */
+            }
+
+            .glass-container {
+                padding: 1rem; /* Smaller padding inside cards */
+            }
+
+            /* Main header */
+            h1.neon-text {
+                font-size: 1.875rem; /* text-3xl */
+                line-height: 2.25rem;
+            }
+            
+            /* Section headers */
+            h2.neon-text {
+                font-size: 1.25rem; /* text-xl */
+            }
+            
+            /* Exam name title */
+            #next-exam-name {
+                font-size: 1.25rem; /* text-xl */
+                line-height: 1.75rem;
+                height: auto; /* Remove fixed height */
+                min-height: 3.5rem; /* Give it some space */
+            }
+
+            /* Make countdown grid gaps smaller */
+            #countdown-display {
+                gap: 0.5rem;
+            }
+
+            /* Make countdown numbers smaller */
+            .countdown-number {
+                font-size: 2.25rem; /* text-4xl */
+                line-height: 2.5rem;
+            }
+
+            /* Resize test tube for mobile */
+            .test-tube {
+                height: 240px;
+                width: 65px;
+            }
+            
+            /* Adjust height of exam list */
+            #exam-list {
+                max-height: 220px;
+            }
+
+            /* Adjust text size in list */
+            #exam-list .font-bold {
+                font-size: 0.875rem; /* text-sm */
+            }
+            #exam-list .text-sm {
+                font-size: 0.75rem; /* text-xs */
+            }
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-8">
+        <header class="text-center mb-4 sm:mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold neon-text">CSE 5th SEM EXAM COUNTDOWN</h1>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+
+            <!-- Left Column: Countdown & Progress -->
+            <div class="lg:col-span-2 space-y-4 sm:space-y-8">
+                
+                <!-- Countdown Timer -->
+                <div class="glass-container p-4 sm:p-6 md:p-8 text-center">
+                    <h2 class="text-xl md:text-2xl font-light tracking-widest text-gray-300">TIME REMAINING UNTIL</h2>
+                    <h3 id="next-exam-name" class="text-3xl md:text-4xl font-bold text-white my-4 h-16 flex items-center justify-center">
+                        Loading...
+                    </h3>
+                    
+                    <div id="countdown-display" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                        <div class="bg-black/20 p-2 sm:p-4 rounded-lg border border-white/10">
+                            <div id="countdown-days" class="text-5xl md:text-7xl countdown-number">00</div>
+                            <div class="text-base sm:text-lg text-gray-400">Days</div>
+                        </div>
+                        <div class="bg-black/20 p-2 sm:p-4 rounded-lg border border-white/10">
+                            <div id="countdown-hours" class="text-5xl md:text-7xl countdown-number">00</div>
+                            <div class="text-base sm:text-lg text-gray-400">Hours</div>
+                        </div>
+                        <div class="bg-black/20 p-2 sm:p-4 rounded-lg border border-white/10">
+                            <div id="countdown-minutes" class="text-5xl md:text-7xl countdown-number">00</div>
+                            <div class="text-base sm:text-lg text-gray-400">Minutes</div>
+                        </div>
+                        <div class="bg-black/20 p-2 sm:p-4 rounded-lg border border-white/10">
+                            <div id="countdown-seconds" class="text-5xl md:text-7xl countdown-number">00</div>
+                            <div class="text-base sm:text-lg text-gray-400">Seconds</div>
+                        </div>
+                    </div>
+                    
+                    <div id="all-exams-complete" class="hidden text-xl sm:text-3xl font-bold text-green-400 py-12 sm:py-16">
+                        All exams are complete. Well done!
+                    </div>
+                </div>
+
+                <!-- Upcoming Exam List -->
+                <div class="glass-container p-4 sm:p-6 md:p-8">
+                    <h2 class="text-2xl font-bold neon-text mb-4">Upcoming Schedule</h2>
+                    <div id="exam-list" class="space-y-3 max-h-60 md:max-h-80 overflow-y-auto pr-2">
+                        <!-- Exam items will be injected by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Progress Bar -->
+            <div class="lg:col-span-1 glass-container p-4 sm:p-6 md:p-8 flex flex-col items-center">
+                <h2 class="text-2xl font-bold neon-text mb-6 text-center">PROGRESS TO NEXT EXAM</h2>
+                <div class="test-tube-container">
+                    <div class="test-tube">
+                        <div id="test-tube-fluid" class="test-tube-fluid"></div>
+                    </div>
+                    <div class="text-center">
+                        <div id="progress-percentage" class="text-2xl sm:text-3xl font-bold text-white">0%</div>
+                        <div class="text-base sm:text-lg text-gray-400">Elapsed</div>
+                    </div>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-400 text-center mt-6">
+                    This shows the percentage of time elapsed between your last exam (or now) and the next one.
+                </p>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // 1. HARD-CODED EXAM DATA
+        // Using the consolidated list we created earlier.
+        // NOTE: JavaScript months are 0-indexed (0=Jan, 9=Oct, 10=Nov, 11=Dec)
+        const examData = [
+            { name: "Quantum Computing", date: "2025-10-29T10:00:00" },
+            { name: "Database Systems Lab", date: "2025-10-30T13:30:00" },
+            { name: "Operating Systems Lab", date: "2025-10-31T09:30:00" },
+            { name: "Software Engineering Lab", date: "2025-11-04T09:30:00" },
+            { name: "Innovative Project -III", date: "2025-11-07T09:30:00" },
+            { name: "Constitution of India", date: "2025-11-10T10:00:00" },
+            { name: "Neural Network & Deep Learning", date: "2025-11-11T14:00:00" },
+            { name: "SDP-V", date: "2025-11-12T14:00:00" },
+            { name: "Signals & Systems", date: "2025-11-17T14:00:00" },
+            { name: "Database Management Systems", date: "2025-11-19T14:00:00" },
+            { name: "Theory of Computation", date: "2025-11-21T14:00:00" },
+            { name: "Operating Systems", date: "2025-11-25T14:00:00" },
+            { name: "Software Engineering", date: "2025-11-27T14:00:00" },
+            { name: "Essential Studies for Professionals (CS) - V", date: "2025-12-01T14:00:00" }
+        ];
+
+        // 2. GLOBAL VARIABLES
+        let currentExam = null;
+        let progressStartTime = null;
+        let progressEndTime = null;
+        let countdownInterval = null;
+
+        // 3. DOM ELEMENT REFERENCES
+        const nextExamNameEl = document.getElementById('next-exam-name');
+        const countdownDaysEl = document.getElementById('countdown-days');
+        const countdownHoursEl = document.getElementById('countdown-hours');
+        const countdownMinutesEl = document.getElementById('countdown-minutes');
+        const countdownSecondsEl = document.getElementById('countdown-seconds');
+        const examListEl = document.getElementById('exam-list');
+        const fluidEl = document.getElementById('test-tube-fluid');
+        const percentageEl = document.getElementById('progress-percentage');
+        
+        const countdownDisplayEl = document.getElementById('countdown-display');
+        const allExamsCompleteEl = document.getElementById('all-exams-complete');
+
+        // 4. CORE FUNCTIONS
+        
+        /**
+         * Finds the next upcoming exam from the hard-coded list.
+         */
+        function findNextExam() {
+            const now = new Date();
+            let nextExam = null;
+            let nextExamIndex = -1;
+
+            // Find the first exam in the future
+            for (let i = 0; i < examData.length; i++) {
+                const examDate = new Date(examData[i].date);
+                if (examDate > now) {
+                    nextExam = examData[i];
+                    nextExamIndex = i;
+                    break;
+                }
+            }
+            
+            return { nextExam, nextExamIndex };
+        }
+
+        /**
+         * Renders the list of all *upcoming* exams.
+         */
+        function renderUpcomingExamsList(startIndex) {
+            examListEl.innerHTML = ''; // Clear the list
+            if (startIndex === -1) return; // No future exams
+
+            for (let i = startIndex; i < examData.length; i++) {
+                const exam = examData[i];
+                const examDate = new Date(exam.date);
+                const isNext = (i === startIndex);
+
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-lg flex justify-between items-center ${isNext ? 'bg-green-900/50 border border-neon-green' : 'bg-black/20'}`;
+                
+                item.innerHTML = `
+                    <div>
+                        <div class="font-bold ${isNext ? 'text-neon-green' : 'text-white'}">${exam.name}</div>
+                        <div class="text-sm text-gray-400">${examDate.toLocaleString('en-US', { 
+                            dateStyle: 'medium', 
+                            timeStyle: 'short' 
+                        })}</div>
+                    </div>
+                    ${isNext ? '<span class="text-xs font-bold text-neon-green animate-pulse">NEXT</span>' : ''}
+                `;
+                examListEl.appendChild(item);
+            }
+        }
+
+        /**
+         * Updates the countdown timer and progress bar every second.
+         */
+        function updateTimer() {
+            if (!currentExam) return;
+
+            const now = new Date();
+            const examDate = new Date(currentExam.date);
+            const remainingTime = examDate - now;
+
+            if (remainingTime <= 0) {
+                // Time for the next exam!
+                startCountdown();
+                return;
+            }
+
+            // Update Countdown Timer
+            const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+            // Don't update DOM if values haven't changed (more efficient)
+            if (countdownDaysEl.textContent !== String(days).padStart(2, '0')) {
+                countdownDaysEl.textContent = String(days).padStart(2, '0');
+            }
+            if (countdownHoursEl.textContent !== String(hours).padStart(2, '0')) {
+                countdownHoursEl.textContent = String(hours).padStart(2, '0');
+            }
+            if (countdownMinutesEl.textContent !== String(minutes).padStart(2, '0')) {
+                countdownMinutesEl.textContent = String(minutes).padStart(2, '0');
+            }
+            countdownSecondsEl.textContent = String(seconds).padStart(2, '0');
+
+
+            // Update Progress Bar
+            const totalDuration = progressEndTime - progressStartTime;
+            const elapsed = now - progressStartTime;
+            let percentageElapsed = (elapsed / totalDuration) * 100;
+            if (percentageElapsed > 100) percentageElapsed = 100;
+            
+            const percentageFloor = Math.floor(percentageElapsed);
+
+            // The fluid level represents the *elapsed* time (filling up)
+            if (fluidEl.style.height !== `${percentageElapsed}%`) {
+                 fluidEl.style.height = `${percentageElapsed}%`;
+            }
+            if (percentageEl.textContent !== `${percentageFloor}%`) {
+                percentageEl.textContent = `${percentageFloor}%`;
+            }
+            
+            // Set random position for bubble animation
+            fluidEl.style.setProperty('--rand', Math.random());
+        }
+
+        /**
+         * Initializes or resets the countdown timer.
+         */
+        function startCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            const { nextExam, nextExamIndex } = findNextExam();
+            currentExam = nextExam;
+
+            if (!currentExam) {
+                // All exams are over
+                countdownDisplayEl.classList.add('hidden');
+                allExamsCompleteEl.classList.remove('hidden');
+                nextExamNameEl.textContent = "Congratulations!";
+                fluidEl.style.height = '100%';
+                percentageEl.textContent = '100%';
+                examListEl.innerHTML = '<p class="text-gray-400">No more exams on the schedule.</p>';
+                return;
+            }
+            
+            // Ensure correct view is shown
+            countdownDisplayEl.classList.remove('hidden');
+            allExamsCompleteEl.classList.add('hidden');
+
+            // Set the name of the next exam
+            nextExamNameEl.textContent = currentExam.name;
+
+            // Set progress bar start/end times
+            progressStartTime = (nextExamIndex === 0) 
+                ? new Date() // If first exam, start time is now
+                : new Date(examData[nextExamIndex - 1].date); // Else, start time is end of last exam
+            
+            progressEndTime = new Date(currentExam.date);
+
+            // Render the list of upcoming exams
+            renderUpcomingExamsList(nextExamIndex);
+
+            // Start the 1-second interval timer
+            updateTimer(); // Call once immediately to avoid 1-sec delay
+            countdownInterval = setInterval(updateTimer, 1000);
+        }
+
+
+        // 5. INITIALIZATION
+        // Start the entire application once the DOM is loaded.
+        document.addEventListener('DOMContentLoaded', startCountdown);
+
+    </script>
+</body>
+</html>
+

@@ -73,6 +73,79 @@
             line-height: 1;
         }
 
+        /* --- NEW: Total Progress Bar Styles --- */
+        .total-progress-bar {
+            width: 100%;
+            height: 35px;
+            border: 3px solid #aaa;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 15px var(--glow-color);
+        }
+
+        .total-progress-fluid {
+            width: 100%; /* Set by JS */
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green) 0%, #2bff00 100%);
+            border-radius: 17px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            transition: width 0.5s ease-out, box-shadow 0.3s ease, filter 0.3s ease;
+            box-shadow: 0 0 15px var(--glow-color),
+                        inset 0 0 10px rgba(255, 255, 255, 0.5);
+            filter: brightness(1);
+        }
+
+        /* Fluid "edge" or sheen */
+        .total-progress-fluid::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            right: 0px;
+            width: 10px;
+            background: #afffab;
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0.8;
+        }
+
+        /* Horizontal fluid bubbles */
+        .total-progress-fluid::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            top: 30%;
+            right: 10px;
+            animation: bubble-flow-horizontal 3s infinite ease-in;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            opacity: 0;
+        }
+        
+        @keyframes bubble-flow-horizontal {
+            0% {
+                right: 10px;
+                opacity: 0;
+                transform: translateY(0);
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                right: 100%;
+                opacity: 0;
+                transform: translateY(calc(10px * (0.5 - var(--rand-y)))); /* Use a new CSS var */
+            }
+        }
+        /* --- End of Total Progress Bar Styles --- */
+
+
         /* Test Tube Progress Bar */
         .test-tube-container {
             display: flex;
@@ -208,6 +281,19 @@
             h2.neon-text {
                 font-size: 1.25rem; /* text-xl */
             }
+
+            /* NEW: Independence day text */
+            #independence-day-countdown {
+                font-size: 1.125rem; /* text-lg */
+            }
+
+            /* NEW: Total progress bar */
+            .total-progress-bar {
+                height: 28px;
+            }
+            #total-progress-text {
+                font-size: 0.875rem; /* text-sm */
+            }
             
             /* Exam name title */
             #next-exam-name {
@@ -256,6 +342,19 @@
         <header class="text-center mb-4 sm:mb-8">
             <h1 class="text-4xl md:text-5xl font-bold neon-text">CSE 5th SEM EXAM COUNTDOWN</h1>
         </header>
+
+        <!-- NEW SECTION: Total Progress & Independence Day -->
+        <section class="mb-4 sm:mb-8 space-y-4">
+            <h2 id="independence-day-countdown" class="text-center text-lg md:text-xl text-cyan-300 font-light" style="text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);">
+                Calculating...
+            </h2>
+            <div class="glass-container p-2 sm:p-3">
+                <div class="total-progress-bar">
+                    <div id="total-progress-fluid" class="total-progress-fluid"></div>
+                </div>
+            </div>
+            <p id="total-progress-text" class="text-center text-sm sm:text-base text-gray-400">Exam Season Progress: 0% Complete</p>
+        </section>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 
@@ -350,6 +449,12 @@
         let progressEndTime = null;
         let countdownInterval = null;
 
+        // NEW: Global variables for total progress
+        // Start date is set to "today" as requested
+        let totalProgressStartDate = new Date("2025-10-26T00:00:00"); 
+        let totalProgressEndDate = new Date(examData[examData.length - 1].date);
+        let lastIndependenceDayUpdate = 0; // To update day-counter once per second
+
         // 3. DOM ELEMENT REFERENCES
         const nextExamNameEl = document.getElementById('next-exam-name');
         const countdownDaysEl = document.getElementById('countdown-days');
@@ -362,6 +467,11 @@
         
         const countdownDisplayEl = document.getElementById('countdown-display');
         const allExamsCompleteEl = document.getElementById('all-exams-complete');
+
+        // NEW: DOM references for new elements
+        const independenceDayCountdownEl = document.getElementById('independence-day-countdown');
+        const totalProgressFluidEl = document.getElementById('total-progress-fluid');
+        const totalProgressTextEl = document.getElementById('total-progress-text');
 
         // 4. CORE FUNCTIONS
         
@@ -416,9 +526,55 @@
         }
 
         /**
+         * NEW: Updates the Independence Day countdown text.
+         */
+        function updateIndependenceDayCountdown() {
+            const now = new Date();
+            // Check if we already updated this second
+            if (now.getSeconds() === lastIndependenceDayUpdate) return;
+            lastIndependenceDayUpdate = now.getSeconds();
+
+            let nextIndependenceDay = new Date(now.getFullYear(), 7, 15); // Month is 7 (August)
+            if (now > nextIndependenceDay) {
+                nextIndependenceDay.setFullYear(now.getFullYear() + 1);
+            }
+            const remainingTime = nextIndependenceDay - now;
+            const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24)); // Use ceil to be inclusive
+            independenceDayCountdownEl.textContent = `${days} days until Independence Day`;
+        }
+
+        /**
+         * NEW: Updates the total exam season progress bar.
+         */
+        function updateTotalProgress() {
+            const now = new Date();
+            const totalDuration = totalProgressEndDate - totalProgressStartDate;
+            let remainingTime = totalProgressEndDate - now;
+
+            if (remainingTime < 0) remainingTime = 0;
+
+            let percentageRemaining = (remainingTime / totalDuration) * 100;
+            if (percentageRemaining < 0) percentageRemaining = 0;
+            if (percentageRemaining > 100) percentageRemaining = 100;
+
+            const percentageComplete = 100 - percentageRemaining;
+
+            totalProgressFluidEl.style.width = `${percentageRemaining}%`;
+            totalProgressTextEl.textContent = `Exam Season Progress: ${Math.floor(percentageComplete)}% Complete`;
+
+            // Set random position for bubble animation
+            totalProgressFluidEl.style.setProperty('--rand-y', Math.random());
+        }
+
+
+        /**
          * Updates the countdown timer and progress bar every second.
          */
         function updateTimer() {
+            // Run the new update functions
+            updateIndependenceDayCountdown();
+            updateTotalProgress();
+
             if (!currentExam) return;
 
             const now = new Date();
@@ -489,6 +645,13 @@
                 fluidEl.style.height = '100%';
                 percentageEl.textContent = '100%';
                 examListEl.innerHTML = '<p class="text-gray-400">No more exams on the schedule.</p>';
+                
+                // NEW: Handle total progress bar when complete
+                totalProgressFluidEl.style.width = '0%';
+                totalProgressTextEl.textContent = 'Exam Season Progress: 100% Complete';
+                
+                // Run the other updates once
+                updateIndependenceDayCountdown();
                 return;
             }
             

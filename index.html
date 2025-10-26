@@ -454,6 +454,7 @@
         let totalProgressStartDate = new Date("2025-10-26T00:00:00"); 
         let totalProgressEndDate = new Date(examData[examData.length - 1].date);
         let lastIndependenceDayUpdate = 0; // To update day-counter once per second
+        let currentExamIndex = -1; // To track the index of the next exam
 
         // 3. DOM ELEMENT REFERENCES
         const nextExamNameEl = document.getElementById('next-exam-name');
@@ -519,7 +520,10 @@
                             timeStyle: 'short' 
                         })}</div>
                     </div>
-                    ${isNext ? '<span class="text-xs font-bold text-neon-green animate-pulse">NEXT</span>' : ''}
+                    <!-- This is the new part for the individual timer -->
+                    <div id="exam-timer-${i}" class="text-right text-sm font-medium ${isNext ? 'text-neon-green' : 'text-gray-300'}" style="min-width: 100px;">
+                        Loading...
+                    </div>
                 `;
                 examListEl.appendChild(item);
             }
@@ -637,6 +641,72 @@
             
             // Set random position for bubble animation
             fluidEl.style.setProperty('--rand', Math.random());
+
+
+            // --- NEW: Update all timers in the upcoming list ---
+            if (currentExamIndex !== -1) { // Only run if there are upcoming exams
+                const nowForList = new Date(); // Use a consistent 'now' for the loop
+
+                for (let i = currentExamIndex; i < examData.length; i++) {
+                    const examDate = new Date(examData[i].date);
+                    const remainingTime = examDate - nowForList;
+                    
+                    const timerEl = document.getElementById(`exam-timer-${i}`);
+                    if (!timerEl) continue; // Skip if element isn't found
+
+                    // Format the remaining time
+                    let countdownString = "";
+                    let timerClass = "text-right text-sm font-medium "; // base class
+
+                    if (remainingTime <= 0) {
+                        // Check if it's been less than 3 hours (avg exam time)
+                        const examDuration = 3 * 60 * 60 * 1000; 
+                        if (remainingTime > -examDuration) {
+                            countdownString = "In Progress";
+                            timerClass += "text-yellow-400"; // Make it yellow
+                        } else {
+                            countdownString = "Completed";
+                            timerClass += "text-gray-500"; // Make it grey
+                        }
+                    } else {
+                        const d = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                        const h = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        
+                        if (i === currentExamIndex) {
+                            timerClass += "text-neon-green"; // Always green for the next exam
+                        } else {
+                            timerClass += "text-gray-300";
+                        }
+
+                        if (d > 0) {
+                            countdownString = `in ${d}d ${h}h`;
+                        } else {
+                            const m = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                            if (h > 0) {
+                                countdownString = `in ${h}h ${m}m`;
+                            } else {
+                                const s = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                                countdownString = `in ${m}m ${s}s`;
+                                // Make the next exam timer pulse when under 1 hour
+                                if (i === currentExamIndex) {
+                                    timerClass += " animate-pulse";
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Update text content only if it's different
+                    if (timerEl.textContent !== countdownString) {
+                        timerEl.textContent = countdownString;
+                    }
+                    // Update class if different
+                    if (timerEl.className !== timerClass) {
+                        timerEl.className = timerClass;
+                    }
+                }
+            }
+            // --- End of new block ---
+
         }
 
         /**
@@ -649,6 +719,7 @@
 
             const { nextExam, nextExamIndex } = findNextExam();
             currentExam = nextExam;
+            currentExamIndex = nextExamIndex;
 
             if (!currentExam) {
                 // All exams are over
@@ -658,6 +729,7 @@
                 fluidEl.style.height = '100%';
                 percentageEl.textContent = '100%';
                 examListEl.innerHTML = '<p class="text-gray-400">No more exams on the schedule.</p>';
+                currentExamIndex = -1; // All exams are done
                 
                 // NEW: Handle total progress bar when complete
                 totalProgressFluidEl.style.width = '0%';
@@ -698,3 +770,4 @@
     </script>
 </body>
 </html>
+

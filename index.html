@@ -31,7 +31,27 @@
             background-size: 20px 20px;
             overflow-x: hidden;
             padding: 1rem;
+            transition: background-color 0.5s ease;
         }
+
+        /* --- NEW: Focus Mode Styles --- */
+        body.focus-mode-active {
+            background-color: #000;
+        }
+        body.focus-mode-active > div > :not(#main-countdown-card-wrapper) {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: scale(0.95);
+            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+        }
+        body.focus-mode-active > div > #main-countdown-card-wrapper {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: scale(1);
+            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+        }
+        /* --- End Focus Mode Styles --- */
+
 
         /* Main container for the "glass" effect */
         .glass-container {
@@ -41,6 +61,7 @@
             border: 1px solid rgba(57, 255, 20, 0.2);
             border-radius: 1.5rem;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 20px 0 var(--glow-color);
+            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
         }
 
         /* Neon text and pulse animation */
@@ -73,7 +94,7 @@
             line-height: 1;
         }
 
-        /* --- NEW: Total Progress Bar Styles --- */
+        /* --- Total Progress Bar Styles --- */
         .total-progress-bar {
             width: 100%;
             height: 35px;
@@ -93,25 +114,39 @@
             position: absolute;
             left: 0;
             top: 0;
-            transition: width 0.5s ease-out, box-shadow 0.3s ease, filter 0.3s ease;
+            transition: width 0.5s ease-out, box-shadow 0.3s ease, filter 0.3s ease, background 0.3s ease;
             box-shadow: 0 0 15px var(--glow-color),
                         inset 0 0 10px rgba(255, 255, 255, 0.5);
             filter: brightness(1);
         }
 
-        /* Fluid "edge" or sheen */
-        .total-progress-fluid::before {
-            content: '';
+        /* --- NEW: Wavy Meniscus (Horizontal) --- */
+        .meniscus-horizontal-wrapper {
             position: absolute;
-            top: 2px;
-            bottom: 2px;
-            right: 0px;
-            width: 10px;
-            background: #afffab;
-            border-radius: 50%;
-            filter: blur(2px);
-            opacity: 0.8;
+            top: 0;
+            bottom: 0;
+            right: -2px; /* Position at the end of the fluid */
+            width: 20px;
+            overflow: hidden;
         }
+        .meniscus-horizontal-wave {
+            position: absolute;
+            width: 40px;
+            height: 100%;
+            background-color: var(--fluid-sheen);
+            border-radius: 45%;
+            animation: wave-horizontal 2s infinite linear;
+            filter: blur(1px);
+            opacity: 0.8;
+            transition: background-color 0.3s ease;
+        }
+        @keyframes wave-horizontal {
+            0% { transform: translateX(0px); }
+            50% { transform: translateX(-20px); }
+            100% { transform: translateX(0px); }
+        }
+        /* --- End Horizontal Meniscus --- */
+
 
         /* Horizontal fluid bubbles */
         .total-progress-fluid::after {
@@ -174,24 +209,39 @@
             border-radius: 0 0 36px 36px;
             position: absolute;
             bottom: 0;
-            transition: height 0.5s ease-out, box-shadow 0.3s ease, filter 0.3s ease;
+            transition: height 0.5s ease-out, box-shadow 0.3s ease, filter 0.3s ease, background 0.3s ease;
             box-shadow: 0 0 15px var(--glow-color),
                         inset 0 0 10px rgba(255, 255, 255, 0.5);
             filter: brightness(1);
         }
 
-        /* Fluid surface */
-        .test-tube-fluid::before {
-            content: '';
+        /* --- NEW: Wavy Meniscus (Vertical) --- */
+        .meniscus-vertical-wrapper {
             position: absolute;
-            top: -5px;
+            top: -10px; /* Position at the surface of the fluid */
             left: 0;
             right: 0;
-            height: 10px;
-            background: #afffab;
-            border-radius: 50%;
-            filter: blur(2px);
+            height: 20px;
+            overflow: hidden;
         }
+        .meniscus-vertical-wave {
+            position: absolute;
+            width: 150%;
+            height: 40px;
+            left: -25%;
+            background-color: var(--fluid-sheen);
+            border-radius: 45%;
+            animation: wave-vertical 2s infinite linear;
+            filter: blur(2px);
+            opacity: 0.8;
+            transition: background-color 0.3s ease;
+        }
+        @keyframes wave-vertical {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(3deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        /* --- End Vertical Meniscus --- */
 
         /* Animated bubbles */
         .test-tube-fluid::after {
@@ -216,16 +266,14 @@
         
         .test-tube-container:hover .test-tube-fluid {
             filter: brightness(1.2);
-            animation: slosh 0.5s alternate infinite ease-in-out;
         }
         
-        .test-tube-container:hover .test-tube-fluid::after {
-            animation-duration: 1.5s; /* Bubbles rise faster on hover */
+        .test-tube-container:hover .meniscus-vertical-wave {
+            animation: wave-vertical 1s infinite linear; /* Faster slosh on hover */
         }
 
-        @keyframes slosh {
-            from { transform: skewX(-3deg) translateX(2px); }
-            to { transform: skewX(3deg) translateX(-2px); }
+        .test-tube-container:hover .test-tube-fluid::after {
+            animation-duration: 1.5s; /* Bubbles rise faster on hover */
         }
 
         @keyframes bubble-rise {
@@ -255,13 +303,110 @@
             background: var(--dark-green);
             border-radius: 4px;
             border: 1px solid var(--neon-green);
+            transition: background 0.3s ease;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: var(--neon-green);
         }
 
+        /* --- Theme Panel Styles --- */
+        .header-btn {
+            transition: color 0.3s ease;
+        }
+        .header-btn svg {
+            transition: transform 0.5s ease;
+        }
+        .header-btn:hover svg {
+            transform: rotate(90deg) scale(1.1);
+        }
+        /* NEW: Focus mode button active state */
+        .header-btn.focus-active {
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+        .header-btn.focus-active svg {
+            transform: scale(1.1);
+        }
+
+        .theme-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .theme-swatch:hover {
+            transform: scale(1.1);
+            border-color: #fff;
+        }
+        .theme-swatch.active {
+            border: 4px solid #fff;
+            box-shadow: 0 0 20px var(--glow-color) !important;
+        }
+        /* --- End of Theme Panel Styles --- */
+        
+        /* --- NEW: Circular Progress Bar Styles --- */
+        .exam-progress-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            /* The conic-gradient magic */
+            background: radial-gradient(closest-side, rgba(0,0,0,0.5) 79%, transparent 80% 100%),
+                        conic-gradient(var(--neon-green) calc(var(--progress-percent) * 1%), rgba(255,255,255,0.1) 0);
+            position: relative;
+            box-shadow: 0 0 15px var(--glow-color);
+            transition: all 0.5s ease;
+            animation: load-in 0.5s ease-out;
+        }
+
+        @keyframes load-in {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+                --progress-percent: 0;
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+                /* --progress-percent is set by JS */
+            }
+        }
+
+        .exam-progress-text {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--glow-color);
+        }
+        /* Pulse for next exam */
+        .exam-progress-circle.next-exam {
+            box-shadow: 0 0 25px var(--glow-color);
+            animation: load-in 0.5s ease-out, pulse-glow-border 2s infinite alternate;
+        }
+        @keyframes pulse-glow-border {
+            from { box-shadow: 0 0 15px var(--glow-color); }
+            to { box-shadow: 0 0 30px var(--glow-color); }
+        }
+        /* Style for completed/in-progress text */
+        .exam-status-text {
+            width: 60px;
+            height: 60px;
+            display: grid;
+            place-items: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #888;
+        }
+        .exam-status-text.in-progress {
+            color: #facc15; /* yellow-400 */
+        }
+        /* --- End Circular Progress Styles --- */
+
+
         /* --- MOBILE RESPONSIVENESS --- */
-        /* These media queries will override Tailwind classes on small screens */
         @media (max-width: 640px) {
             body {
                 padding: 0.5rem; /* Tighter padding for mobile */
@@ -269,6 +414,15 @@
 
             .glass-container {
                 padding: 1rem; /* Smaller padding inside cards */
+            }
+            
+            /* Position header buttons */
+            .header-btn {
+                top: -0.25rem !important;
+                right: -0.25rem !important;
+            }
+            #focus-btn {
+                right: 2.75rem !important;
             }
 
             /* Main header */
@@ -282,12 +436,10 @@
                 font-size: 1.25rem; /* text-xl */
             }
 
-            /* NEW: Independence day text */
             #independence-day-countdown {
                 font-size: 1.125rem; /* text-lg */
             }
 
-            /* NEW: Total progress bar */
             .total-progress-bar {
                 height: 28px;
             }
@@ -295,7 +447,6 @@
                 font-size: 0.875rem; /* text-sm */
             }
             
-            /* Exam name title */
             #next-exam-name {
                 font-size: 1.25rem; /* text-xl */
                 line-height: 1.75rem;
@@ -303,34 +454,47 @@
                 min-height: 3.5rem; /* Give it some space */
             }
 
-            /* Make countdown grid gaps smaller */
             #countdown-display {
                 gap: 0.5rem;
             }
 
-            /* Make countdown numbers smaller */
             .countdown-number {
                 font-size: 2.25rem; /* text-4xl */
                 line-height: 2.5rem;
             }
 
-            /* Resize test tube for mobile */
             .test-tube {
                 height: 240px;
                 width: 65px;
             }
             
-            /* Adjust height of exam list */
             #exam-list {
                 max-height: 220px;
             }
 
-            /* Adjust text size in list */
+            /* Adjust exam list item layout */
+            .exam-list-item {
+                flex-direction: row;
+                align-items: center;
+            }
+            .exam-list-item > div:first-child {
+                flex-grow: 1;
+                padding-right: 0.5rem;
+            }
             #exam-list .font-bold {
                 font-size: 0.875rem; /* text-sm */
             }
             #exam-list .text-sm {
                 font-size: 0.75rem; /* text-xs */
+            }
+            
+            /* Make circular progress smaller */
+            .exam-progress-circle, .exam-status-text {
+                width: 50px;
+                height: 50px;
+            }
+            .exam-progress-text, .exam-status-text {
+                font-size: 0.7rem;
             }
         }
 
@@ -339,27 +503,64 @@
 <body class="flex items-center justify-center min-h-screen">
 
     <div class="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-8">
-        <header class="text-center mb-4 sm:mb-8">
+        <header id="main-header" class="text-center mb-4 sm:mb-8 relative glass-container !bg-transparent !shadow-none !border-none">
             <h1 class="text-4xl md:text-5xl font-bold neon-text">CSE 5th SEM EXAM COUNTDOWN</h1>
+            
+            <!-- NEW: Focus Mode Button -->
+            <button id="focus-btn" class="header-btn absolute top-0 right-12 p-2 text-gray-400 hover:text-neon-green" title="Toggle Focus Mode">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            </button>
+
+            <!-- Settings Button -->
+            <button id="settings-btn" class="header-btn absolute top-0 right-0 p-2 text-gray-400 hover:text-neon-green" title="Toggle Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
         </header>
 
-        <!-- NEW SECTION: Total Progress & Independence Day -->
-        <section class="mb-4 sm:mb-8 space-y-4">
+        <!-- Theme Customization Panel -->
+        <div id="theme-panel" class="hidden glass-container p-4 sm:p-6 mb-4 sm:mb-8 max-w-md mx-auto">
+            <h3 class="text-lg font-bold text-center text-white mb-4">CHOOSE THEME</h3>
+            <div class="flex justify-center gap-4">
+                <!-- Green (Default) -->
+                <button class="theme-swatch" data-theme="green" style="background-color: #39ff14; box-shadow: 0 0 15px #39ff14;"></button>
+                <!-- Blue -->
+                <button class="theme-swatch" data-theme="blue" style="background-color: #14B8FF; box-shadow: 0 0 15px #14B8FF;"></button>
+                <!-- Magenta -->
+                <button class="theme-swatch" data-theme="magenta" style="background-color: #FF00FF; box-shadow: 0 0 15px #FF00FF;"></button>
+                <!-- Orange -->
+                <button class="theme-swatch" data-theme="orange" style="background-color: #FF9900; box-shadow: 0 0 15px #FF9900;"></button>
+            </div>
+        </div>
+
+        <!-- Total Progress & Independence Day -->
+        <section id="total-progress-section" class="mb-4 sm:mb-8 space-y-4">
             <h2 id="independence-day-countdown" class="text-center text-lg md:text-xl text-cyan-300 font-light" style="text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);">
                 Calculating...
             </h2>
             <div class="glass-container p-2 sm:p-3">
                 <div class="total-progress-bar">
-                    <div id="total-progress-fluid" class="total-progress-fluid"></div>
+                    <div id="total-progress-fluid" class="total-progress-fluid">
+                        <!-- NEW: Meniscus -->
+                        <div class="meniscus-horizontal-wrapper">
+                            <div class="meniscus-horizontal-wave"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <p id="total-progress-text" class="text-center text-sm sm:text-base text-gray-400">Exam Season Progress: 0% Complete</p>
         </section>
 
+        <!-- Wrapper for main content -->
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 
-            <!-- Left Column: Countdown & Progress -->
-            <div class="lg:col-span-2 space-y-4 sm:space-y-8">
+            <!-- Left Column: Countdown & Progress (WRAPPED FOR FOCUS MODE) -->
+            <div id="main-countdown-card-wrapper" class="lg:col-span-2 space-y-4 sm:space-y-8">
                 
                 <!-- Countdown Timer -->
                 <div class="glass-container p-4 sm:p-6 md:p-8 text-center">
@@ -403,11 +604,16 @@
             </div>
 
             <!-- Right Column: Progress Bar -->
-            <div class="lg:col-span-1 glass-container p-4 sm:p-6 md:p-8 flex flex-col items-center">
+            <div id="test-tube-card" class="lg:col-span-1 glass-container p-4 sm:p-6 md:p-8 flex flex-col items-center">
                 <h2 class="text-2xl font-bold neon-text mb-6 text-center">PROGRESS TO NEXT EXAM</h2>
                 <div class="test-tube-container">
                     <div class="test-tube">
-                        <div id="test-tube-fluid" class="test-tube-fluid"></div>
+                        <div id="test-tube-fluid" class="test-tube-fluid">
+                            <!-- NEW: Meniscus -->
+                            <div class="meniscus-vertical-wrapper">
+                                <div class="meniscus-vertical-wave"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="text-center">
                         <div id="progress-percentage" class="text-2xl sm:text-3xl font-bold text-white">0%</div>
@@ -426,13 +632,13 @@
         // 1. HARD-CODED EXAM DATA
         // Using the consolidated list we created earlier.
         // NOTE: JavaScript months are 0-indexed (0=Jan, 9=Oct, 10=Nov, 11=Dec)
-        const examData = [
+        let examData = [
             { name: "Quantum Computing", date: "2025-10-29T10:00:00" },
             { name: "Database Systems Lab", date: "2025-10-30T13:30:00" },
             { name: "Operating Systems Lab", date: "2025-10-31T09:30:00" },
             { name: "Software Engineering Lab", date: "2025-11-04T09:30:00" },
             { name: "Innovative Project -III", date: "2025-11-07T09:30:00" },
-            { name: "Constitution of India", date: "2025-11-10T10:00:00" },
+            { name: "Constitution of India", date: "2025-11-10T10:00:00" }, // Corrected '0T' to '00'
             { name: "Neural Network & Deep Learning", date: "2025-11-11T14:00:00" },
             { name: "SDP-V", date: "2025-11-12T14:00:00" },
             { name: "Signals & Systems", date: "2025-11-17T14:00:00" },
@@ -443,18 +649,49 @@
             { name: "Essential Studies for Professionals (CS) - V", date: "2025-12-01T14:00:00" }
         ];
 
+        // NEW: Theme Definitions
+        const themes = {
+            'green': {
+                '--neon-green': '#39ff14',
+                '--dark-green': '#004d00',
+                '--glow-color': 'rgba(57, 255, 20, 0.7)',
+                '--fluid-gradient': 'linear-gradient(180deg, var(--neon-green) 0%, #2bff00 100%)',
+                '--fluid-sheen': '#afffab'
+            },
+            'blue': {
+                '--neon-green': '#14B8FF',
+                '--dark-green': '#003366',
+                '--glow-color': 'rgba(20, 184, 255, 0.7)',
+                '--fluid-gradient': 'linear-gradient(180deg, #14B8FF 0%, #009DFF 100%)',
+                '--fluid-sheen': '#a6e7ff'
+            },
+            'magenta': {
+                '--neon-green': '#FF00FF',
+                '--dark-green': '#660066',
+                '--glow-color': 'rgba(255, 0, 255, 0.7)',
+                '--fluid-gradient': 'linear-gradient(180deg, #FF00FF 0%, #D400D4 100%)',
+                '--fluid-sheen': '#ffb3ff'
+            },
+            'orange': {
+                '--neon-green': '#FF9900',
+                '--dark-green': '#663d00',
+                '--glow-color': 'rgba(255, 153, 0, 0.7)',
+                '--fluid-gradient': 'linear-gradient(180deg, #FF9900 0%, #FF7A00 100%)',
+                '--fluid-sheen': '#ffe0b3'
+            }
+        };
+
         // 2. GLOBAL VARIABLES
         let currentExam = null;
         let progressStartTime = null;
         let progressEndTime = null;
         let countdownInterval = null;
 
-        // NEW: Global variables for total progress
-        // Start date is set to "today" as requested
         let totalProgressStartDate = new Date("2025-10-26T00:00:00"); 
         let totalProgressEndDate = new Date(examData[examData.length - 1].date);
-        let lastIndependenceDayUpdate = 0; // To update day-counter once per second
-        let currentExamIndex = -1; // To track the index of the next exam
+        let lastIndependenceDayUpdate = 0; 
+        let currentExamIndex = -1; 
+        let isFocusMode = false; // NEW: Focus mode state
 
         // 3. DOM ELEMENT REFERENCES
         const nextExamNameEl = document.getElementById('next-exam-name');
@@ -469,13 +706,61 @@
         const countdownDisplayEl = document.getElementById('countdown-display');
         const allExamsCompleteEl = document.getElementById('all-exams-complete');
 
-        // NEW: DOM references for new elements
         const independenceDayCountdownEl = document.getElementById('independence-day-countdown');
         const totalProgressFluidEl = document.getElementById('total-progress-fluid');
         const totalProgressTextEl = document.getElementById('total-progress-text');
 
+        const settingsBtn = document.getElementById('settings-btn');
+        const themePanel = document.getElementById('theme-panel');
+        const themeSwatches = document.querySelectorAll('.theme-swatch');
+
+        // NEW: Focus Mode DOM reference
+        const focusBtn = document.getElementById('focus-btn');
+        const bodyEl = document.body;
+
         // 4. CORE FUNCTIONS
         
+        // --- Theme Functions ---
+        function setTheme(themeName) {
+            const theme = themes[themeName] || themes['green']; 
+            
+            const root = document.documentElement;
+            for (const [key, value] of Object.entries(theme)) {
+                root.style.setProperty(key, value);
+            }
+            
+            root.style.setProperty('--fluid-gradient-horizontal', theme['--fluid-gradient'].replace('180deg', '90deg'));
+            
+            totalProgressFluidEl.style.background = root.style.getPropertyValue('--fluid-gradient-horizontal');
+            fluidEl.style.background = root.style.getPropertyValue('--fluid-gradient');
+            
+            // Update all meniscus waves
+            document.querySelectorAll('.meniscus-horizontal-wave, .meniscus-vertical-wave').forEach(el => {
+                el.style.backgroundColor = root.style.getPropertyValue('--fluid-sheen');
+            });
+
+            themeSwatches.forEach(swatch => {
+                swatch.classList.toggle('active', swatch.dataset.theme === themeName);
+            });
+
+            localStorage.setItem('examCountdownTheme', themeName);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('examCountdownTheme') || 'green';
+            setTheme(savedTheme);
+        }
+
+        // --- NEW: Focus Mode Function ---
+        function toggleFocusMode() {
+            isFocusMode = !isFocusMode;
+            bodyEl.classList.toggle('focus-mode-active', isFocusMode);
+            focusBtn.classList.toggle('focus-active', isFocusMode);
+            focusBtn.title = isFocusMode ? "Disable Focus Mode" : "Enable Focus Mode";
+        }
+
+        // --- End of Focus/Theme Functions ---
+
         /**
          * Finds the next upcoming exam from the hard-coded list.
          */
@@ -484,7 +769,6 @@
             let nextExam = null;
             let nextExamIndex = -1;
 
-            // Find the first exam in the future
             for (let i = 0; i < examData.length; i++) {
                 const examDate = new Date(examData[i].date);
                 if (examDate > now) {
@@ -510,8 +794,10 @@
                 const isNext = (i === startIndex);
 
                 const item = document.createElement('div');
-                item.className = `p-3 rounded-lg flex justify-between items-center ${isNext ? 'bg-green-900/50 border border-neon-green' : 'bg-black/20'}`;
+                // NEW: Added .exam-list-item for mobile styling
+                item.className = `exam-list-item p-3 rounded-lg flex justify-between items-center ${isNext ? 'bg-green-900/50 border border-neon-green' : 'bg-black/20'}`;
                 
+                // NEW: Updated HTML structure for circular progress
                 item.innerHTML = `
                     <div>
                         <div class="font-bold ${isNext ? 'text-neon-green' : 'text-white'}">${exam.name}</div>
@@ -520,9 +806,9 @@
                             timeStyle: 'short' 
                         })}</div>
                     </div>
-                    <!-- This is the new part for the individual timer -->
-                    <div id="exam-timer-${i}" class="text-right text-sm font-medium ${isNext ? 'text-neon-green' : 'text-gray-300'}" style="min-width: 100px;">
-                        Loading...
+                    <!-- This div will hold either the circle or the status text -->
+                    <div id="exam-timer-${i}" class="${isNext ? 'next-exam' : ''}">
+                        <!-- Content injected by updateTimer -->
                     </div>
                 `;
                 examListEl.appendChild(item);
@@ -530,38 +816,31 @@
         }
 
         /**
-         * NEW: Updates the Independence Day countdown text.
+         * Updates the Independence Day countdown text.
          */
         function updateIndependenceDayCountdown() {
             const now = new Date();
-            // Check if we already updated this second
             if (now.getSeconds() === lastIndependenceDayUpdate) return;
             lastIndependenceDayUpdate = now.getSeconds();
 
-            // Target date is Dec 1, 2025, as requested.
             const independenceDayDate = new Date("2025-12-01T00:00:00"); 
-
-            // Start date for the countdown is Oct 26, 2025.
             const startDate = new Date("2025-10-26T00:00:00");
 
             if (now < startDate) {
-                // If it's before the countdown period, show the total duration.
                 const totalDuration = independenceDayDate - startDate;
                 const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24));
                 independenceDayCountdownEl.textContent = `Countdown begins Oct 26 (${totalDays} days total)`;
             } else if (now > independenceDayDate) {
-                // If the date has passed.
                 independenceDayCountdownEl.textContent = `Independence Day has passed!`;
             } else {
-                // We are in the countdown period.
                 const remainingTime = independenceDayDate - now;
-                const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24)); // Use ceil to be inclusive
+                const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24)); 
                 independenceDayCountdownEl.textContent = `${days} days until Independence Day`;
             }
         }
 
         /**
-         * NEW: Updates the total exam season progress bar.
+         * Updates the total exam season progress bar.
          */
         function updateTotalProgress() {
             const now = new Date();
@@ -578,8 +857,6 @@
 
             totalProgressFluidEl.style.width = `${percentageRemaining}%`;
             totalProgressTextEl.textContent = `Exam Season Progress: ${Math.floor(percentageComplete)}% Complete`;
-
-            // Set random position for bubble animation
             totalProgressFluidEl.style.setProperty('--rand-y', Math.random());
         }
 
@@ -588,7 +865,7 @@
          * Updates the countdown timer and progress bar every second.
          */
         function updateTimer() {
-            // Run the new update functions
+            // Run the other update functions
             updateIndependenceDayCountdown();
             updateTotalProgress();
 
@@ -599,18 +876,16 @@
             const remainingTime = examDate - now;
 
             if (remainingTime <= 0) {
-                // Time for the next exam!
-                startCountdown();
+                startCountdown(); // Time for the next exam!
                 return;
             }
 
-            // Update Countdown Timer
+            // Update Main Countdown Timer
             const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
             const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-            // Don't update DOM if values haven't changed (more efficient)
             if (countdownDaysEl.textContent !== String(days).padStart(2, '0')) {
                 countdownDaysEl.textContent = String(days).padStart(2, '0');
             }
@@ -623,7 +898,7 @@
             countdownSecondsEl.textContent = String(seconds).padStart(2, '0');
 
 
-            // Update Progress Bar
+            // Update Test Tube Progress Bar
             const totalDuration = progressEndTime - progressStartTime;
             const elapsed = now - progressStartTime;
             let percentageElapsed = (elapsed / totalDuration) * 100;
@@ -631,77 +906,76 @@
             
             const percentageFloor = Math.floor(percentageElapsed);
 
-            // The fluid level represents the *elapsed* time (filling up)
             if (fluidEl.style.height !== `${percentageElapsed}%`) {
                  fluidEl.style.height = `${percentageElapsed}%`;
             }
             if (percentageEl.textContent !== `${percentageFloor}%`) {
                 percentageEl.textContent = `${percentageFloor}%`;
             }
-            
-            // Set random position for bubble animation
             fluidEl.style.setProperty('--rand', Math.random());
 
 
             // --- NEW: Update all timers in the upcoming list ---
-            if (currentExamIndex !== -1) { // Only run if there are upcoming exams
-                const nowForList = new Date(); // Use a consistent 'now' for the loop
+            if (currentExamIndex !== -1) { 
+                const nowForList = new Date(); 
 
                 for (let i = currentExamIndex; i < examData.length; i++) {
                     const examDate = new Date(examData[i].date);
                     const remainingTime = examDate - nowForList;
                     
                     const timerEl = document.getElementById(`exam-timer-${i}`);
-                    if (!timerEl) continue; // Skip if element isn't found
+                    if (!timerEl) continue; 
 
-                    // Format the remaining time
-                    let countdownString = "";
-                    let timerClass = "text-right text-sm font-medium "; // base class
-
+                    let timerHTML = "";
+                    let timerClass = "";
+                    
                     if (remainingTime <= 0) {
-                        // Check if it's been less than 3 hours (avg exam time)
                         const examDuration = 3 * 60 * 60 * 1000; 
                         if (remainingTime > -examDuration) {
-                            countdownString = "In Progress";
-                            timerClass += "text-yellow-400"; // Make it yellow
+                            timerHTML = `In Progress`;
+                            timerClass = "exam-status-text in-progress";
                         } else {
-                            countdownString = "Completed";
-                            timerClass += "text-gray-500"; // Make it grey
+                            timerHTML = `Completed`;
+                            timerClass = "exam-status-text";
                         }
                     } else {
+                        // It's an upcoming exam, calculate progress
+                        const prevExamDate = (i === 0) ? totalProgressStartDate : new Date(examData[i-1].date);
+                        const totalTimeSpan = examDate - prevExamDate;
+                        const elapsedTime = nowForList - prevExamDate;
+                        let progressPercent = (elapsedTime / totalTimeSpan) * 100;
+                        if (progressPercent < 0) progressPercent = 0;
+                        if (progressPercent > 100) progressPercent = 100;
+                        
+                        // Format the remaining time string
+                        let countdownString = "";
                         const d = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
                         const h = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const m = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
                         
-                        if (i === currentExamIndex) {
-                            timerClass += "text-neon-green"; // Always green for the next exam
+                        if (d > 0) {
+                            countdownString = `${d}d ${h}h`;
+                        } else if (h > 0) {
+                            countdownString = `${h}h ${m}m`;
                         } else {
-                            timerClass += "text-gray-300";
+                            const s = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                            countdownString = `${m}m ${s}s`;
                         }
 
-                        if (d > 0) {
-                            countdownString = `in ${d}d ${h}h`;
-                        } else {
-                            const m = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-                            if (h > 0) {
-                                countdownString = `in ${h}h ${m}m`;
-                            } else {
-                                const s = Math.floor((remainingTime % (1000 * 60)) / 1000);
-                                countdownString = `in ${m}m ${s}s`;
-                                // Make the next exam timer pulse when under 1 hour
-                                if (i === currentExamIndex) {
-                                    timerClass += " animate-pulse";
-                                }
-                            }
-                        }
+                        // Build the circle HTML
+                        timerClass = `exam-progress-circle ${i === currentExamIndex ? 'next-exam' : ''}`;
+                        timerHTML = `<span class="exam-progress-text">${countdownString}</span>`;
+                        
+                        // Set the CSS variable for the conic-gradient
+                        timerEl.style.setProperty('--progress-percent', progressPercent);
                     }
                     
-                    // Update text content only if it's different
-                    if (timerEl.textContent !== countdownString) {
-                        timerEl.textContent = countdownString;
-                    }
-                    // Update class if different
+                    // Update HTML and class only if they've changed
                     if (timerEl.className !== timerClass) {
                         timerEl.className = timerClass;
+                    }
+                    if (timerEl.innerHTML !== timerHTML) {
+                        timerEl.innerHTML = timerHTML;
                     }
                 }
             }
@@ -729,45 +1003,54 @@
                 fluidEl.style.height = '100%';
                 percentageEl.textContent = '100%';
                 examListEl.innerHTML = '<p class="text-gray-400">No more exams on the schedule.</p>';
-                currentExamIndex = -1; // All exams are done
+                currentExamIndex = -1; 
                 
-                // NEW: Handle total progress bar when complete
                 totalProgressFluidEl.style.width = '0%';
                 totalProgressTextEl.textContent = 'Exam Season Progress: 100% Complete';
                 
-                // Run the other updates once
                 updateIndependenceDayCountdown();
                 return;
             }
             
-            // Ensure correct view is shown
             countdownDisplayEl.classList.remove('hidden');
             allExamsCompleteEl.classList.add('hidden');
-
-            // Set the name of the next exam
             nextExamNameEl.textContent = currentExam.name;
 
             // Set progress bar start/end times
+            // This is for the main "Test Tube"
             progressStartTime = (nextExamIndex === 0) 
-                ? new Date() // If first exam, start time is now
-                : new Date(examData[nextExamIndex - 1].date); // Else, start time is end of last exam
+                ? totalProgressStartDate // Use the overall start date
+                : new Date(examData[nextExamIndex - 1].date); 
             
             progressEndTime = new Date(currentExam.date);
 
-            // Render the list of upcoming exams
             renderUpcomingExamsList(nextExamIndex);
 
-            // Start the 1-second interval timer
-            updateTimer(); // Call once immediately to avoid 1-sec delay
+            updateTimer(); // Call once immediately
             countdownInterval = setInterval(updateTimer, 1000);
         }
 
 
         // 5. INITIALIZATION
-        // Start the entire application once the DOM is loaded.
-        document.addEventListener('DOMContentLoaded', startCountdown);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme(); 
+            startCountdown(); 
+
+            // --- Event Listeners ---
+            settingsBtn.addEventListener('click', () => {
+                themePanel.classList.toggle('hidden');
+            });
+
+            themeSwatches.forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    setTheme(swatch.dataset.theme);
+                });
+            });
+
+            // NEW: Focus Mode Listener
+            focusBtn.addEventListener('click', toggleFocusMode);
+        });
 
     </script>
 </body>
 </html>
-

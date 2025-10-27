@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Countdown</title>
+    <!-- UPDATED: Browser tab title --><title>CSE 5th Semester Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- NEW: Added Fira Code for a techy, monospaced font --><link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
+
 
     <style>
         /* --- NEW: CSS @property for animating gradients --- */
@@ -116,6 +118,13 @@
                          0 0 30px var(--glow-color);
             animation: pulse-glow 2s infinite alternate;
         }
+        /* NEW: Smaller glow for credit points */
+        .neon-text-small {
+            color: var(--neon-green);
+            text-shadow: 0 0 3px var(--neon-green),
+                         0 0 10px var(--neon-green);
+        }
+
 
         @keyframes pulse-glow {
             from {
@@ -127,6 +136,18 @@
                 text-shadow: 0 0 10px var(--neon-green),
                              0 0 30px var(--glow-color),
                              0 0 60px var(--glow-color);
+            }
+        }
+
+        /* NEW: Animation for credit points */
+        @keyframes credit-glow {
+            0%, 100% {
+                box-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+                border-color: rgba(57, 255, 20, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(57, 255, 20, 0.9);
+                border-color: rgba(57, 255, 20, 0.7);
             }
         }
 
@@ -651,14 +672,12 @@
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <!-- UPDATED: Added `relative` to main wrapper -->
-    <div class="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-8 relative">
+    <!-- UPDATED: Added `relative` to main wrapper --><div class="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-8 relative">
         <!-- 
           NEW: Buttons moved OUTSIDE the header.
           #focus-btn does NOT have .hide-on-focus
           #settings-btn DOES have .hide-on-focus
-        -->
-        <button id="focus-btn" class="header-btn absolute top-2 sm:top-4 md:top-8 right-12 sm:right-16 md:right-20 p-2 text-gray-400 hover:text-neon-green z-10" title="Toggle Focus Mode">
+        --><button id="focus-btn" class="header-btn absolute top-2 sm:top-4 md:top-8 right-12 sm:right-16 md:right-20 p-2 text-gray-400 hover:text-neon-green z-10" title="Toggle Focus Mode">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -672,9 +691,8 @@
             </svg>
         </button>
 
-        <!-- UPDATED: Removed position: relative from header -->
-        <header id="main-header" class="text-center mb-4 sm:mb-8 glass-container !bg-transparent !shadow-none !border-none hide-on-focus">
-            <h1 class="text-4xl md:text-5xl font-bold neon-text">CSE 5th SEM EXAM COUNTDOWN</h1>
+        <!-- UPDATED: Removed position: relative from header --><header id="main-header" class="text-center mb-4 sm:mb-8 glass-container !bg-transparent !shadow-none !border-none hide-on-focus">
+            <!-- UPDATED: Main title --><h1 class="text-4xl md:text-5xl font-bold neon-text">CSE(IOT, CS, BT) 5th Semester Dashboard</h1>
         </header>
 
         <div id="theme-panel" class="hidden glass-container p-4 sm:p-6 mb-4 sm:mb-8 max-w-md mx-auto hide-on-focus">
@@ -738,11 +756,9 @@
                     </div>
                 </div>
 
-                <div class="glass-container p-4 sm:p-6 md:p-8 hide-on-focus"> <!-- This whole card will hide on focus -->
-                    <h2 class="text-2xl font-bold neon-text mb-4">Upcoming Schedule</h2>
+                <div class="glass-container p-4 sm:p-6 md:p-8 hide-on-focus"> <!-- This whole card will hide on focus --><h2 class="text-2xl font-bold neon-text mb-4">Upcoming Schedule</h2>
                     <div id="exam-list" class="space-y-3 max-h-60 md:max-h-80 overflow-y-auto pr-2">
-                        <!-- Exam list items will be injected here by JS -->
-                    </div>
+                        <!-- Exam list items will be injected here by JS --></div>
                 </div>
 
             </div>
@@ -773,23 +789,23 @@
 
     <script>
         // 1. HARD-CODED EXAM DATA
-        // Using the consolidated list we created earlier.
         // NOTE: JavaScript months are 0-indexed (0=Jan, 9=Oct, 10=Nov, 11=Dec)
+        // UPDATED: Added 'credits' property to each exam object
         let examData = [
-            { name: "Quantum Computing", date: "2025-10-29T10:00:00" },
-            { name: "Database Systems Lab", date: "2025-10-30T13:30:00" },
-            { name: "Operating Systems Lab", date: "2025-10-31T09:30:00" },
-            { name: "Software Engineering Lab", date: "2025-11-04T09:30:00" },
-            { name: "Innovative Project -III", date: "2025-11-07T09:30:00" },
-            { name: "Constitution of India", date: "2025-11-10T10:00:00" }, // Corrected '0T' to '00'
-            { name: "Neural Network & Deep Learning", date: "2025-11-11T14:00:00" },
-            { name: "SDP-V", date: "2025-11-12T14:00:00" },
-            { name: "Signals & Systems", date: "2025-11-17T14:00:00" },
-            { name: "Database Management Systems", date: "2025-11-19T14:00:00" },
-            { name: "Theory of Computation", date: "2025-11-21T14:00:00" },
-            { name: "Operating Systems", date: "2025-11-25T14:00:00" },
-            { name: "Software Engineering", date: "2025-11-27T14:00:00" },
-            { name: "Essential Studies for Professionals (CS) - V", date: "2025-12-01T14:00:00" }
+            { name: "Quantum Computing", date: "2025-10-29T10:00:00", credits: 1 },
+            { name: "Database Systems Lab", date: "2025-10-30T13:30:00", credits: 2 },
+            { name: "Operating Systems Lab", date: "2025-10-31T09:30:00", credits: 2 },
+            { name: "Software Engineering Lab", date: "2025-11-04T09:30:00", credits: 2 },
+            { name: "Innovative Project -III", date: "2025-11-07T09:30:00", credits: 1 },
+            { name: "Constitution of India", date: "2025-11-10T10:00:00", credits: 1 },
+            { name: "Neural Network & Deep Learning", date: "2025-11-11T14:00:00", credits: 3 },
+            { name: "SDP-V", date: "2025-11-12T14:00:00", credits: 0.5 },
+            { name: "Signals & Systems", date: "2025-11-17T14:00:00", credits: 3 },
+            { name: "Database Management Systems", date: "2025-11-19T14:00:00", credits: 3 },
+            { name: "Theory of Computation", date: "2025-11-21T14:00:00", credits: 3 },
+            { name: "Operating Systems", date: "2025-11-25T14:00:00", credits: 3 },
+            { name: "Software Engineering", date: "2025-11-27T14:00:00", credits: 3 },
+            { name: "Essential Studies for Professionals (CS) - V", date: "2025-12-01T14:00:00", credits: 0.5 }
         ];
 
         // NEW: Theme Definitions
@@ -931,60 +947,63 @@
             examListEl.innerHTML = ''; // Clear the list
             if (startIndex === -1) return; // No future exams
 
+            // --- FIX: Corrected typo "iP" to "i" ---
             for (let i = startIndex; i < examData.length; i++) {
                 const exam = examData[i];
                 const examDate = new Date(exam.date);
                 const isNext = (i === startIndex);
 
-                // --- NEW: Calculate time gap ---
-                let prevExamDate;
-                // Use totalProgressStartDate for the *very first* exam in the whole list
-                if (i === 0) {
-                    prevExamDate = totalProgressStartDate; 
-                } else {
-                    prevExamDate = new Date(examData[i-1].date);
-                }
-                
-                const timeGapMs = examDate - prevExamDate;
-                const gapDays = Math.floor(timeGapMs / (1000 * 60 * 60 * 24));
-                const gapHours = Math.floor((timeGapMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
+                // --- START FIX: Define gapText, gapColor, and animationDelay ---
                 let gapText = "";
-                if (gapDays > 0) {
-                    gapText = `(${gapDays}d ${gapHours}h prep time)`;
-                } else if (gapHours > 0) {
-                    gapText = `(${gapHours}h prep time)`;
+                let gapColor = "text-gray-500";
+                // Stagger animation for each item
+                const animationDelay = (i - startIndex) * 0.1; 
+
+                if (i > 0) {
+                    const prevExamDate = new Date(examData[i - 1].date);
+                    const gap = examDate - prevExamDate; // Gap in milliseconds
+
+                    const gapDays = Math.floor(gap / (1000 * 60 * 60 * 24));
+                    const gapHours = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                    if (gapDays > 0) {
+                        gapText = `(${gapDays}d ${gapHours}h prep time)`;
+                    } else {
+                        gapText = `(${gapHours}h prep time)`;
+                    }
+
+                    // Set color based on prep time
+                    if (gap < (2 * 24 * 60 * 60 * 1000)) { // Less than 2 days
+                        gapColor = "text-yellow-400"; // Warning color
+                    } else {
+                        gapColor = "text-green-400"; // Good color
+                    }
                 } else {
-                    gapText = `(Back-to-back)`;
+                    gapText = "(First exam)";
                 }
-                // --- End of time gap calculation ---
+                // --- END FIX ---
 
                 const item = document.createElement('div');
-                // NEW: Added .exam-list-item for mobile styling
-                item.className = `exam-list-item p-3 rounded-lg flex justify-between items-center ${isNext ? 'bg-green-900/50 border border-neon-green' : 'bg-black/20'}`;
+                // UPDATED: Removed justify-between. We'll use flex-grow on the child.
+                item.className = `exam-list-item p-3 rounded-lg flex items-center ${isNext ? 'bg-green-900/50 border border-neon-green' : 'bg-black/20'}`;
                 
-                // NEW: Updated HTML structure for circular progress AND gap text
-                
-                // Stagger the animation delay for the gap text
-                const animationDelay = 0.5 + (i - startIndex) * 0.2;
-                const gapColor = isNext ? 'text-cyan-300' : 'text-cyan-500';
+                // Removed stray comment "<!-- ... existing code ... -->"
                 const gapAnimation = isNext ? 'animate-pulse' : '';
 
+                // UPDATED: This is the full, corrected HTML structure
                 item.innerHTML = `
-                    <div>
-                        <div class="font-bold ${isNext ? 'text-neon-green' : 'text-white'}">${exam.name}</div>
+                    <div class="flex-grow"> <!-- This div will grow to push the timer to the right --><div class="flex items-center justify-between"> <!-- This inner div spaces the name and credits --><span class="font-bold ${isNext ? 'text-neon-green' : 'text-white'}">${exam.name}</span>
+                            <span class="text-xs font-mono px-2 py-0.5 rounded ${isNext ? 'bg-neon-green/30 text-neon-green animate-[credit-glow_2s_ease-in-out_infinite] border border-[rgba(57,255,20,0.4)]' : 'bg-gray-700 text-gray-300'} neon-text-small">${exam.credits} Credits</span>
+                        </div>
                         <div class="text-sm text-gray-400">${examDate.toLocaleString('en-US', {    
                             dateStyle: 'medium',    
                             timeStyle: 'short'    
                         })}</div>
-                        <!-- NEWLY ADDED ELEMENT for prep time -->
-                        <div class="text-xs ${gapColor} ${gapAnimation} opacity-0" style="animation: fadeIn 1s ease ${animationDelay}s forwards;">
+                        <!-- NEWLY ADDED ELEMENT for prep time --><div class="text-xs ${gapColor} ${gapAnimation} opacity-0" style="animation: fadeIn 1s ease ${animationDelay}s forwards;">
                             ${gapText}
                         </div>
                     </div>
-                    <div id="exam-timer-${i}" class="${isNext ? 'next-exam' : ''}">
-                        <!-- Circular timer will be injected by updateTimer() -->
-                    </div>
+                    <div id="exam-timer-${i}" class="flex-shrink-0 ml-4 ${isNext ? 'next-exam' : ''}"> <!-- This div holds the timer --><!-- Circular timer will be injected by updateTimer() --></div>
                 `;
                 examListEl.appendChild(item);
             }
@@ -1055,6 +1074,10 @@
                 return;
             }
 
+            // --- START FIX ---
+            // This block was corrupted by a bad copy-paste.
+            // Replaced the erroneous code with the correct countdown logic.
+
             // Update Main Countdown Timer
             const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
             const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -1071,6 +1094,7 @@
                 countdownMinutesEl.textContent = String(minutes).padStart(2, '0');
             }
             countdownSecondsEl.textContent = String(seconds).padStart(2, '0');
+            // --- END FIX ---
 
 
             // Update Test Tube Progress Bar
@@ -1237,3 +1261,4 @@
     </script>
 </body>
 </html>
+

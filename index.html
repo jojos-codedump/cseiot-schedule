@@ -47,28 +47,52 @@
         
         /* This class is added to elements we want to hide */
         .hide-on-focus {
-            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+            /* UPDATED: Make hide animation 4 seconds, include width/padding/margin */
+            transition: opacity 4s ease, visibility 4s ease, transform 4s ease,
+                        width 4s ease, padding 4s ease, margin 4s ease;
         }
         
         body.focus-mode-active .hide-on-focus {
             opacity: 0 !important;
             visibility: hidden !important;
             transform: scale(0.95);
+            /* NEW: Collapse element to 0 size to allow centering */
+            width: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden; /* Hide content while collapsing */
         }
         
         /* When focused, change <main> from grid to flex to center its only child */
         body.focus-mode-active main {
             display: flex;
             justify-content: center;
+            align-items: center; /* Added for vertical centering */
+            min-height: calc(100vh - 4rem); /* Ensure it can center vertically */
+            gap: 0 !important; /* NEW: Remove gap to allow true centering */
+        }
+        
+        /* UPDATED: Add base transition to the card wrapper */
+        #main-countdown-card-wrapper {
+            transition: opacity 4s ease, visibility 4s ease, transform 4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         /* Center and scale up the main countdown card */
         body.focus-mode-active #main-countdown-card-wrapper {
             opacity: 1 !important;
             visibility: visible !important;
-            transform: scale(1);
-            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+            transform: scale(1.05); /* Slightly scale up for focus */
+            /* UPDATED: Make focus animation 4 seconds */
+            transition: opacity 4s ease, visibility 4s ease, transform 4s cubic-bezier(0.25, 1, 0.5, 1);
             margin: 0 auto; /* Center it */
+        }
+        
+        /* UPDATED: Override to keep focus button visible */
+        body.focus-mode-active #focus-btn {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: scale(1);
+            transition: opacity 0.5s ease, color 0.3s ease; /* Faster transition for the button */
         }
         /* --- End Focus Mode Styles --- */
 
@@ -124,6 +148,12 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+        
+        /* NEW: Animation for prep time text */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         /* Apply to main components */
@@ -530,11 +560,13 @@
             }
             
             /* Position header buttons */
-            .header-btn {
-                top: -0.25rem !important;
-                right: -0.25rem !important;
+            /* UPDATED: No longer need .header-btn top override */
+            #settings-btn {
+                top: 0.5rem !important;
+                right: 0.5rem !important;
             }
             #focus-btn {
+                top: 0.5rem !important;
                 right: 2.75rem !important;
             }
 
@@ -600,6 +632,10 @@
             #exam-list .text-sm {
                 font-size: 0.75rem; /* text-xs */
             }
+            /* NEW: Prep time text on mobile */
+            #exam-list .text-xs {
+                font-size: 0.7rem; 
+            }
             
             /* Make circular progress smaller */
             .exam-progress-circle, .exam-status-text {
@@ -615,23 +651,30 @@
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <div class="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-8">
-        <header id="main-header" class="text-center mb-4 sm:mb-8 relative glass-container !bg-transparent !shadow-none !border-none hide-on-focus">
-            <h1 class="text-4xl md:text-5xl font-bold neon-text">CSE 5th SEM EXAM COUNTDOWN</h1>
-            
-            <button id="focus-btn" class="header-btn absolute top-0 right-12 p-2 text-gray-400 hover:text-neon-green" title="Toggle Focus Mode">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-            </button>
+    <!-- UPDATED: Added `relative` to main wrapper -->
+    <div class="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-8 relative">
+        <!-- 
+          NEW: Buttons moved OUTSIDE the header.
+          #focus-btn does NOT have .hide-on-focus
+          #settings-btn DOES have .hide-on-focus
+        -->
+        <button id="focus-btn" class="header-btn absolute top-2 sm:top-4 md:top-8 right-12 sm:right-16 md:right-20 p-2 text-gray-400 hover:text-neon-green z-10" title="Toggle Focus Mode">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+        </button>
 
-            <button id="settings-btn" class="header-btn absolute top-0 right-0 p-2 text-gray-400 hover:text-neon-green" title="Toggle Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </button>
+        <button id="settings-btn" class="header-btn absolute top-2 sm:top-4 md:top-8 right-2 sm:right-4 md:right-8 p-2 text-gray-400 hover:text-neon-green z-10 hide-on-focus" title="Toggle Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+
+        <!-- UPDATED: Removed position: relative from header -->
+        <header id="main-header" class="text-center mb-4 sm:mb-8 glass-container !bg-transparent !shadow-none !border-none hide-on-focus">
+            <h1 class="text-4xl md:text-5xl font-bold neon-text">CSE 5th SEM EXAM COUNTDOWN</h1>
         </header>
 
         <div id="theme-panel" class="hidden glass-container p-4 sm:p-6 mb-4 sm:mb-8 max-w-md mx-auto hide-on-focus">
@@ -695,10 +738,11 @@
                     </div>
                 </div>
 
-                <div class="glass-container p-4 sm:p-6 md:p-8">
+                <div class="glass-container p-4 sm:p-6 md:p-8 hide-on-focus"> <!-- This whole card will hide on focus -->
                     <h2 class="text-2xl font-bold neon-text mb-4">Upcoming Schedule</h2>
                     <div id="exam-list" class="space-y-3 max-h-60 md:max-h-80 overflow-y-auto pr-2">
-                        </div>
+                        <!-- Exam list items will be injected here by JS -->
+                    </div>
                 </div>
 
             </div>
@@ -786,10 +830,10 @@
         let progressEndTime = null;
         let countdownInterval = null;
 
-        let totalProgressStartDate = new Date("2025-10-26T00:00:00"); 
+        let totalProgressStartDate = new Date("2025-10-26T00:00:00");    
         let totalProgressEndDate = new Date(examData[examData.length - 1].date);
-        let lastIndependenceDayUpdate = 0; 
-        let currentExamIndex = -1; 
+        let lastIndependenceDayUpdate = 0;    
+        let currentExamIndex = -1;    
         let isFocusMode = false; // NEW: Focus mode state
 
         // 3. DOM ELEMENT REFERENCES
@@ -821,7 +865,7 @@
         
         // --- Theme Functions ---
         function setTheme(themeName) {
-            const theme = themes[themeName] || themes['green']; 
+            const theme = themes[themeName] || themes['green'];    
             
             const root = document.documentElement;
             for (const [key, value] of Object.entries(theme)) {
@@ -892,21 +936,55 @@
                 const examDate = new Date(exam.date);
                 const isNext = (i === startIndex);
 
+                // --- NEW: Calculate time gap ---
+                let prevExamDate;
+                // Use totalProgressStartDate for the *very first* exam in the whole list
+                if (i === 0) {
+                    prevExamDate = totalProgressStartDate; 
+                } else {
+                    prevExamDate = new Date(examData[i-1].date);
+                }
+                
+                const timeGapMs = examDate - prevExamDate;
+                const gapDays = Math.floor(timeGapMs / (1000 * 60 * 60 * 24));
+                const gapHours = Math.floor((timeGapMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                let gapText = "";
+                if (gapDays > 0) {
+                    gapText = `(${gapDays}d ${gapHours}h prep time)`;
+                } else if (gapHours > 0) {
+                    gapText = `(${gapHours}h prep time)`;
+                } else {
+                    gapText = `(Back-to-back)`;
+                }
+                // --- End of time gap calculation ---
+
                 const item = document.createElement('div');
                 // NEW: Added .exam-list-item for mobile styling
                 item.className = `exam-list-item p-3 rounded-lg flex justify-between items-center ${isNext ? 'bg-green-900/50 border border-neon-green' : 'bg-black/20'}`;
                 
-                // NEW: Updated HTML structure for circular progress
+                // NEW: Updated HTML structure for circular progress AND gap text
+                
+                // Stagger the animation delay for the gap text
+                const animationDelay = 0.5 + (i - startIndex) * 0.2;
+                const gapColor = isNext ? 'text-cyan-300' : 'text-cyan-500';
+                const gapAnimation = isNext ? 'animate-pulse' : '';
+
                 item.innerHTML = `
                     <div>
                         <div class="font-bold ${isNext ? 'text-neon-green' : 'text-white'}">${exam.name}</div>
-                        <div class="text-sm text-gray-400">${examDate.toLocaleString('en-US', { 
-                            dateStyle: 'medium', 
-                            timeStyle: 'short' 
+                        <div class="text-sm text-gray-400">${examDate.toLocaleString('en-US', {    
+                            dateStyle: 'medium',    
+                            timeStyle: 'short'    
                         })}</div>
+                        <!-- NEWLY ADDED ELEMENT for prep time -->
+                        <div class="text-xs ${gapColor} ${gapAnimation} opacity-0" style="animation: fadeIn 1s ease ${animationDelay}s forwards;">
+                            ${gapText}
+                        </div>
                     </div>
                     <div id="exam-timer-${i}" class="${isNext ? 'next-exam' : ''}">
-                        </div>
+                        <!-- Circular timer will be injected by updateTimer() -->
+                    </div>
                 `;
                 examListEl.appendChild(item);
             }
@@ -920,7 +998,7 @@
             if (now.getSeconds() === lastIndependenceDayUpdate) return;
             lastIndependenceDayUpdate = now.getSeconds();
 
-            const independenceDayDate = new Date("2025-12-01T00:00:00"); 
+            const independenceDayDate = new Date("2025-12-01T00:00:00");    
             const startDate = new Date("2025-10-26T00:00:00");
 
             if (now < startDate) {
@@ -931,7 +1009,7 @@
                 independenceDayCountdownEl.textContent = `Independence Day has passed!`;
             } else {
                 const remainingTime = independenceDayDate - now;
-                const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24)); 
+                const days = Math.ceil(remainingTime / (1000 * 60 * 60 * 24));    
                 independenceDayCountdownEl.textContent = `${days} days until Independence Day`;
             }
         }
@@ -1013,21 +1091,21 @@
 
 
             // --- NEW: Update all timers in the upcoming list ---
-            if (currentExamIndex !== -1) { 
-                const nowForList = new Date(); 
+            if (currentExamIndex !== -1) {    
+                const nowForList = new Date();    
 
                 for (let i = currentExamIndex; i < examData.length; i++) {
                     const examDate = new Date(examData[i].date);
                     const remainingTime = examDate - nowForList;
                     
                     const timerEl = document.getElementById(`exam-timer-${i}`);
-                    if (!timerEl) continue; 
+                    if (!timerEl) continue;    
 
                     let timerHTML = "";
                     let timerClass = "";
                     
                     if (remainingTime <= 0) {
-                        const examDuration = 3 * 60 * 60 * 1000; 
+                        const examDuration = 3 * 60 * 60 * 1000;    
                         if (remainingTime > -examDuration) {
                             timerHTML = `In Progress`;
                             timerClass = "exam-status-text in-progress";
@@ -1037,6 +1115,7 @@
                         }
                     } else {
                         // It's an upcoming exam, calculate progress
+                        // Use totalProgressStartDate for the *very first* exam
                         const prevExamDate = (i === 0) ? totalProgressStartDate : new Date(examData[i-1].date);
                         const totalTimeSpan = examDate - prevExamDate;
                         const elapsedTime = nowForList - prevExamDate;
@@ -1100,7 +1179,7 @@
                 fluidEl.style.height = '100%';
                 percentageEl.textContent = '100%';
                 examListEl.innerHTML = '<p class="text-gray-400">No more exams on the schedule.</p>';
-                currentExamIndex = -1; 
+                currentExamIndex = -1;    
                 
                 totalProgressFluidEl.style.width = '0%';
                 totalProgressTextEl.textContent = 'Exam Season Progress: 100% Complete';
@@ -1115,9 +1194,9 @@
 
             // Set progress bar start/end times
             // This is for the main "Test Tube"
-            progressStartTime = (nextExamIndex === 0) 
+            progressStartTime = (nextExamIndex === 0)    
                 ? totalProgressStartDate // Use the overall start date
-                : new Date(examData[nextExamIndex - 1].date); 
+                : new Date(examData[nextExamIndex - 1].date);    
             
             progressEndTime = new Date(currentExam.date);
 
@@ -1130,8 +1209,8 @@
 
         // 5. INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
-            loadTheme(); 
-            startCountdown(); 
+            loadTheme();    
+            startCountdown();    
 
             // --- NEW: Add 'loaded' class after load animation ---
             // This restores the faster transitions for real-time updates
